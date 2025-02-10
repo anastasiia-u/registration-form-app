@@ -34,7 +34,7 @@ const SignUpForm = () => {
       hasUppercase: /[A-Z]/.test(password),
       hasLowercase: /[a-z]/.test(password),
       hasNumber: /[0-9]/.test(password),
-      isLongEnough: password.length >= 8,
+      isLongEnough: password.length >= 10,
     });
   };
 
@@ -134,7 +134,7 @@ const SignUpForm = () => {
               1 number
             </li>
             <li className={passwordValidations.isLongEnough ? 'green' : 'red'}>
-              Minimum 8 characters
+              Minimum 10 characters
             </li>
           </ul>
         </div>
