@@ -91,6 +91,69 @@ describe('SignUpForm', () => {
       expect(screen.getByRole('button', { name: BUTTON_TEXT })).toBeDisabled();
     });
 
+    test('submits the form with valid data', () => {
+      const formData = fillOutForm();
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(consoleSpy).toHaveBeenCalledWith('Form submitted', formData);
+    });
+
+    test('does not submit the form with invalid data', () => {
+      fillOutForm({ email: 'invalid' });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(consoleSpy).not toHaveBeenCalled();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    test('handles empty form submission', () => {
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.getByText(/Please enter a valid email address/i)).toBeInTheDocument();
+      expect(screen.getByText(/Minimum 8 characters/i).className).toMatch(/red/);
+    });
+
+    test('handles form submission with only whitespace', () => {
+      fillOutForm({
+        firstName: '   ',
+        lastName: '   ',
+        email: '   ',
+        password: '   ',
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.getByText(/Please enter a valid email address/i)).toBeInTheDocument();
+      expect(screen.getByText(/Minimum 8 characters/i).className).toMatch(/red/);
+    });
+
+    test('handles form submission with special characters', () => {
+      fillOutForm({
+        firstName: '!@#$%',
+        lastName: '^&*()',
+        email: 'john.doe@ex@mple.com',
+        password: 'P@ssw0rd!',
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.getByText(/Please enter a valid email address/i)).toBeInTheDocument();
+    });
+
+    test('handles form submission with extremely long input', () => {
+      const longString = 'a'.repeat(1000);
+      fillOutForm({
+        firstName: longString,
+        lastName: longString,
+        email: `john.doe${longString}@example.com`,
+        password: `Password123${longString}`,
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(consoleSpy).toHaveBeenCalledWith('Form submitted', {
+        firstName: longString,
+        lastName: longString,
+        email: `john.doe${longString}@example.com`,
+        password: `Password123${longString}`,
+      });
+    });
+  });
+      expect(screen.getByRole('button', { name: BUTTON_TEXT })).toBeDisabled();
+    });
+
     test('calls console log with correct data on valid form submission', () => {
       const formData = fillOutForm();
       fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
