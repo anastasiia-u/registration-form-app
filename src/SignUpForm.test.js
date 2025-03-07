@@ -96,5 +96,61 @@ describe('SignUpForm', () => {
       fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
       expect(consoleSpy).toHaveBeenLastCalledWith('Form submitted:', formData);
     });
+
+    test('submits the form with valid data', () => {
+      const formData = fillOutForm();
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(consoleSpy).toHaveBeenCalledWith('Form submitted', formData);
+    });
+
+    test('does not submit the form with invalid data', () => {
+      fillOutForm({ email: 'invalid' });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(consoleSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    test('handles empty form submission', () => {
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.queryByText(/Please enter a valid email address/i)).toBeInTheDocument();
+      expect(screen.queryByText(/Minimum 8 characters/i)).toBeInTheDocument();
+    });
+
+    test('handles form submission with only spaces', () => {
+      fillOutForm({
+        firstName: '   ',
+        lastName: '   ',
+        email: '   ',
+        password: '   ',
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.queryByText(/Please enter a valid email address/i)).toBeInTheDocument();
+      expect(screen.queryByText(/Minimum 8 characters/i)).toBeInTheDocument();
+    });
+
+    test('handles form submission with special characters', () => {
+      fillOutForm({
+        firstName: '!@#$%',
+        lastName: '^&*()',
+        email: 'john.doe@ex@mple.com',
+        password: 'P@ssw0rd!',
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.queryByText(/Please enter a valid email address/i)).toBeInTheDocument();
+    });
+
+    test('handles form submission with long input values', () => {
+      const longString = 'a'.repeat(256);
+      fillOutForm({
+        firstName: longString,
+        lastName: longString,
+        email: `${longString}@example.com`,
+        password: longString,
+      });
+      fireEvent.click(screen.getByRole('button', { name: BUTTON_TEXT }));
+      expect(screen.queryByText(/Please enter a valid email address/i)).toBeInTheDocument();
+      expect(screen.queryByText(/Minimum 8 characters/i)).toBeInTheDocument();
+    });
   });
 });
